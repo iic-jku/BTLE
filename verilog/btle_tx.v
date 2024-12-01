@@ -4,7 +4,14 @@
 
 // iverilog -o btle_tx btle_tx.v dpram.v crc24.v crc24_core.v scramble.v scramble_core.v gfsk_modulation.v bit_repeat_upsample.v gauss_filter.v vco.v 
 
+`ifndef __BTLE_TX__
+`define __BTLE_TX__
+`include "dpram.v"
+`include "crc24.v"
+`include "scramble.v"
+`include "gfsk_modulation.v"
 `timescale 1ns / 1ps
+
 module btle_tx #
 (
   parameter CRC_STATE_BIT_WIDTH = 24,
@@ -99,7 +106,7 @@ assign i = (phy_tx_state == IDLE? 0 : i_internal);
 assign q = (phy_tx_state == IDLE? 0 : q_internal);
 
 // state machine to extract payload length and check crc
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     addr <= 0;
     octet <= 0;
@@ -170,7 +177,10 @@ always @ (posedge clk) begin
 
           bit_count <= bit_count + 1;
 
+          // FIXME: correct statement below to get rid of lint warning
+          /* verilator lint_off WIDTHEXPAND */
           if (bit_count == ((payload_length+2)*8 - 1)) begin
+          /* verilator lint_on WIDTHEXPAND */
             info_bit_valid_last <= 1;
             phy_tx_state <= WAIT_LAST_SAMPLE;
           end
@@ -179,7 +189,7 @@ always @ (posedge clk) begin
         end
 
         if (addr == 2 && clk_count == 1) begin
-          payload_length <= (adv_pdu_flag? octet[5:0] : octet[4:0]);
+          payload_length <= (adv_pdu_flag? {1'b0,octet[5:0]} : {2'b0,octet[4:0]});
         end
 
         if (addr == 2 && clk_count == 2) begin
@@ -285,5 +295,5 @@ gfsk_modulation # (
   .bit_upsample_gauss_filter_valid_last(bit_upsample_gauss_filter_valid_last)
 );
 
-endmodule
-
+endmodule // btle_tx
+`endif
