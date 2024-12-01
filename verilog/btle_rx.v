@@ -4,7 +4,12 @@
 
 // iverilog -o btle_rx btle_rx.v btle_rx_core.v gfsk_demodulation.v search_unique_bit_sequence.v scramble_core.v crc24_core.v serial_in_ram_out.v dpram.v
 
+`ifndef __BTLE_RX__
+`define __BTLE_RX__
+`include "btle_rx_core.v"
+`include "serial_in_ram_out.v"
 `timescale 1ns / 1ps
+
 module btle_rx #
 (
   parameter SAMPLE_PER_SYMBOL = 8,
@@ -48,8 +53,10 @@ reg [2:0] iq_phase;
 wire [(SAMPLE_PER_SYMBOL-1) : 0] hit_flag_internal;
 wire [6:0] payload_length_internal [0 : (SAMPLE_PER_SYMBOL-1)];
 wire [(SAMPLE_PER_SYMBOL-1) : 0] payload_length_valid;
+/* verilator lint_off UNUSEDSIGNAL */
 wire [(SAMPLE_PER_SYMBOL-1) : 0] bit_internal;
 wire [(SAMPLE_PER_SYMBOL-1) : 0] bit_valid;
+/* verilator lint_on UNUSEDSIGNAL */
 wire [7:0] octet_internal [0 : (SAMPLE_PER_SYMBOL-1)];
 wire [(SAMPLE_PER_SYMBOL-1) : 0] octet_valid;
 wire [(SAMPLE_PER_SYMBOL-1) : 0] decode_end_internal;
@@ -94,7 +101,7 @@ assign decode_end_early = (|decode_end_and_crc_ok_store);
 assign hit_flag = (hit_flag_any==1 && hit_flag_any_delay==0);
 
 // output interface
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     decode_run <= 0;
     hit_flag_any_delay <= 0;
@@ -213,7 +220,7 @@ end
 
 // distribute sample into all 8 phases
 integer idx;
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     iq_valid_store <= 0;
     iq_phase <= 0;
@@ -283,32 +290,46 @@ generate
       .data(data_internal[gen_idx])
     );
 
-    always @ (posedge clk) begin
-      if (rst|hit_flag_internal[gen_idx]) begin
+    always @ (posedge clk or posedge rst) begin
+      if (rst) begin
         payload_length_store[gen_idx] <= 0;
-      end else if (payload_length_valid[gen_idx]) begin
-        payload_length_store[gen_idx] <= payload_length_internal[gen_idx];
+      end else begin
+        if (hit_flag_internal[gen_idx]) begin
+          payload_length_store[gen_idx] <= 0;
+        end else if (payload_length_valid[gen_idx]) begin
+          payload_length_store[gen_idx] <= payload_length_internal[gen_idx];
+        end
       end
     end
 
-    always @ (posedge clk) begin
-      if (rst|hit_flag_internal[gen_idx]|decode_end_early|decode_end_all) begin
+    always @ (posedge clk or posedge rst) begin
+      if (rst) begin
         crc_ok_store[gen_idx] <= 0;
         decode_end_store[gen_idx] <= 0;
-      end else if (decode_end_internal[gen_idx]) begin
-        crc_ok_store[gen_idx] <= crc_ok_internal[gen_idx];
-        decode_end_store[gen_idx] <= 1;
+      end else begin
+        if (hit_flag_internal[gen_idx]|decode_end_early|decode_end_all) begin
+          crc_ok_store[gen_idx] <= 0;
+          decode_end_store[gen_idx] <= 0;
+        end else if (decode_end_internal[gen_idx]) begin
+          crc_ok_store[gen_idx] <= crc_ok_internal[gen_idx];
+          decode_end_store[gen_idx] <= 1;
+        end
       end
     end
 
-    always @ (posedge clk) begin
-      if (rst|decode_end_internal[gen_idx]|decode_end_early|decode_end_all) begin
+    always @ (posedge clk or posedge rst) begin
+      if (rst) begin
         hit_flag_all_phase[gen_idx] <= 0;
-      end else if (hit_flag_internal[gen_idx]) begin
-        hit_flag_all_phase[gen_idx] <= 1;
+      end else begin
+        if (decode_end_internal[gen_idx]|decode_end_early|decode_end_all) begin
+          hit_flag_all_phase[gen_idx] <= 0;
+        end else if (hit_flag_internal[gen_idx]) begin
+          hit_flag_all_phase[gen_idx] <= 1;
+        end
       end
     end
   end
 endgenerate
 
-endmodule
+endmodule // btle_rx
+`endif
