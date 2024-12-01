@@ -244,7 +244,7 @@ end
 
 genvar gen_idx;
 generate
-  for (gen_idx=0; gen_idx<SAMPLE_PER_SYMBOL; gen_idx=gen_idx+1) begin
+  for (gen_idx=0; gen_idx<SAMPLE_PER_SYMBOL; gen_idx=gen_idx+1) begin : g_rx
     btle_rx_core # (
       .GFSK_DEMODULATION_BIT_WIDTH(GFSK_DEMODULATION_BIT_WIDTH),
       .LEN_UNIQUE_BIT_SEQUENCE(LEN_UNIQUE_BIT_SEQUENCE),
