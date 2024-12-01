@@ -2,6 +2,9 @@
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
 // SPDX-License-Identifier: Apache-2.0 license
 
+`ifndef __SEARCH_UNIQUE_BIT_SEQUENCE__
+`define __SEARCH_UNIQUE_BIT_SEQUENCE__
+
 `timescale 1ns / 1ps
 module search_unique_bit_sequence #
 (
@@ -21,7 +24,7 @@ reg [(LEN_UNIQUE_BIT_SEQUENCE-1) : 0] bit_store;
 
 assign hit_flag = (bit_store == unique_bit_sequence)&bit_valid_delay1;
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     bit_store <= 0;
     bit_valid_delay1 <= 0;
@@ -34,4 +37,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
+endmodule // search_unique_bit_sequence
+`endif
