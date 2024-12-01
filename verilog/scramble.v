@@ -4,7 +4,11 @@
 
 // Core_v5.3 figure3.5 on page 2735
 
+`ifndef __SCRAMBLE__
+`define __SCRAMBLE__
+`include "scramble_core.v"
 `timescale 1ns / 1ps
+
 module scramble #
 (
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6
@@ -29,7 +33,9 @@ reg [0:0] scramble_state;
 
 wire data_in_valid_internal;
 wire data_out_internal;
+/* verilator lint_off UNUSEDSIGNAL */
 wire data_out_valid_internal;
+/* verilator lint_on UNUSEDSIGNAL */
 wire scramble_start_for_input;
 wire scramble_start_for_output;
 
@@ -62,7 +68,7 @@ scramble_core # (
   .data_out_valid(data_out_valid_internal)
 );
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     data_in_delay <= 0;
     data_in_valid_delay <= 0;
@@ -95,4 +101,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
+endmodule // scramble
+`endif
