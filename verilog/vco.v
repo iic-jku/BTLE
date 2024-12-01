@@ -6,7 +6,11 @@
 // The modulation index shall be between 0.45 and 0.55
 // We implement 0.5
 
+`ifndef __VCO__
+`define __VCO__
+`include "dpram.v"
 `timescale 1ns / 1ps
+
 module vco #
 (
   parameter VCO_BIT_WIDTH = 16,
@@ -33,7 +37,7 @@ module vco #
 
 reg signed [(VCO_BIT_WIDTH-1) : 0] integral_voltage_signal;
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     sin_cos_out_valid <= 0;
     sin_cos_out_valid_last <= 0;
@@ -49,6 +53,8 @@ always @ (posedge clk) begin
   end
 end
 
+// FIXME the sine and cosine RAM approach needs to be replaced by something more
+// FIXME efficient; either implement a const table, or use a CORDIC
 dpram # (
   .DATA_WIDTH(IQ_BIT_WIDTH),
   .ADDRESS_WIDTH(SIN_COS_ADDR_BIT_WIDTH)
@@ -79,5 +85,5 @@ dpram # (
   .read_data(sin_out)
 );
 
-endmodule
-
+endmodule // vco
+`endif
