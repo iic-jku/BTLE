@@ -6,7 +6,12 @@
 
 // iverilog -o btle_controller btle_controller.v btle_ll.v uart_frame_rx.v uart_frame_tx.v rx_clk_gen.v tx_clk_gen.v btle_phy.v btle_rx.v btle_rx_core.v gfsk_demodulation.v search_unique_bit_sequence.v scramble_core.v crc24_core.v serial_in_ram_out.v dpram.v btle_tx.v crc24.v scramble.v gfsk_modulation.v bit_repeat_upsample.v gauss_filter.v vco.v
 
+`ifndef __BTLE_CONTROLLER__
+`define __BTLE_CONTROLLER__
+`include "btle_ll.v"
+`include "btle_phy.v"
 `timescale 1ns / 1ps
+
 module btle_controller #
 (
 	parameter	CLK_FREQUENCE	= 16_000_000,	//hz
@@ -313,5 +318,5 @@ btle_phy #
   .rx_pdu_octet_mem_data(ext_rx_pdu_octet_mem_data)
 );
 
-endmodule
-
+endmodule // btle_controller
+`endif
