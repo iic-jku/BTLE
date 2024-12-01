@@ -4,7 +4,10 @@
 
 // Core_v5.3 figure3.5 on page 2735
 
+`ifndef __SCRAMBLE_CORE__
+`define __SCRAMBLE_CORE__
 `timescale 1ns / 1ps
+
 module scramble_core #
 (
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6
@@ -22,7 +25,7 @@ module scramble_core #
 
 reg [CHANNEL_NUMBER_BIT_WIDTH : 0] lfsr;
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     data_out <= 0;
     data_out_valid <= 0;
@@ -64,5 +67,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
-
+endmodule // scramble_core
+`endif
