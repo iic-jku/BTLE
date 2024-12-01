@@ -5,7 +5,10 @@
 // Core_v5.3 section 3.1on page 2640
 // BT = 0.5
 
+`ifndef __GAUSS_FILTER__
+`define __GAUSS_FILTER__
 `timescale 1ns / 1ps
+
 module gauss_filter #
 (
   parameter GAUSS_FILTER_BIT_WIDTH = 16,
@@ -75,7 +78,7 @@ assign tap15_mult = (bit_upsample_store[14]?gauss_filter_tap1:(-gauss_filter_tap
 assign tap16_mult = (bit_upsample_store[15]?gauss_filter_tap0:(-gauss_filter_tap0));
 
 // Populate input tap index and value to internal taps
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     gauss_filter_tap0 <= 0;
     gauss_filter_tap1 <= 0;
@@ -102,7 +105,7 @@ always @ (posedge clk) begin
 end
 
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     bit_upsample_gauss_filter <= 0;
     bit_upsample_gauss_filter_valid <= 0;
@@ -120,4 +123,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
+endmodule // gauss_filter
+`endif
