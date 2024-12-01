@@ -5,10 +5,15 @@
 // Input phy_bit rate 1M, output phy_bit rate 8M
 // clk speed 16M
 
+`ifndef __BIT_REPEAT_UPSAMPLE__
+`define __BIT_REPEAT_UPSAMPLE__
+
 `timescale 1ns / 1ps
 module bit_repeat_upsample #
 (
+  /* verilator lint_off UNUSEDPARAM */
   parameter SAMPLE_PER_SYMBOL = 8
+  /* verilator lint_on UNUSEDPARAM */
 ) (
   input wire clk,
   input wire rst,
@@ -36,7 +41,7 @@ assign bit_valid_last_wide = (|bit_valid_last_delay);
 assign bit_upsample_valid = (bit_upsample_valid_internal & bit_valid_wide);
 assign bit_upsample_valid_last = ((bit_upsample_count==0) & bit_valid_last_wide);
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     bit_valid_delay <= 0;
     bit_valid_last_delay <= 0;
@@ -48,20 +53,6 @@ always @ (posedge clk) begin
   end else begin
     bit_valid_delay[0]  <= bit_valid;
     bit_valid_delay[14:1]  <= bit_valid_delay[13:0];
-    // bit_valid_delay[1]  <= bit_valid_delay[0];
-    // bit_valid_delay[2]  <= bit_valid_delay[1];
-    // bit_valid_delay[3]  <= bit_valid_delay[2];
-    // bit_valid_delay[4]  <= bit_valid_delay[3];
-    // bit_valid_delay[5]  <= bit_valid_delay[4];
-    // bit_valid_delay[6]  <= bit_valid_delay[5];
-    // bit_valid_delay[7]  <= bit_valid_delay[6];
-    // bit_valid_delay[8]  <= bit_valid_delay[7];
-    // bit_valid_delay[9]  <= bit_valid_delay[8];
-    // bit_valid_delay[10] <= bit_valid_delay[9];
-    // bit_valid_delay[11] <= bit_valid_delay[10];
-    // bit_valid_delay[12] <= bit_valid_delay[11];
-    // bit_valid_delay[13] <= bit_valid_delay[12];
-    // bit_valid_delay[14] <= bit_valid_delay[13];
 
     bit_valid_last_delay[0]  <= bit_valid_last;
     bit_valid_last_delay[14:1]  <= bit_valid_last_delay[13:0];
@@ -80,5 +71,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
-
+endmodule // bit_repeat_upsample
+`endif 
