@@ -11,7 +11,12 @@
 
 // iverilog -o btle_ll btle_ll.v uart_frame_rx.v  uart_frame_tx.v rx_clk_gen.v  tx_clk_gen.v
 
+`ifndef __BTLE_LL__
+`define __BTLE_LL__
+`include "uart_frame_rx.v"
+`include "uart_frame_tx.v"
 `timescale 1ns / 1ps
+
 module btle_ll # (
 	parameter	CLK_FREQUENCE	= 16_000_000,	//hz
   parameter BAUD_RATE		= 115200		,		  //9600、19200 、38400 、57600 、115200、230400、460800、921600
@@ -85,7 +90,9 @@ wire frame_error;
 // tx
 reg  frame_en;
 reg  [FRAME_WD-1:0]	data_frame;
+/* verilator lint_off UNUSEDSIGNAL */
 wire tx_done;
+/* verilator lint_on UNUSEDSIGNAL */
 // ===========UART===========
 
 wire [7:0] all_input;
@@ -102,7 +109,7 @@ assign all_input = ({7'd0, tx_iq_valid_last}|
                            rx_frame));
 
 reg [2:0] ll_state;
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     tx_gauss_filter_tap_index <= 0;
     tx_gauss_filter_tap_value <= 0;
@@ -356,6 +363,10 @@ always @ (posedge clk) begin
         if (all_input == 64)
           ll_state <= STANDBY;
       end
+
+      default: begin
+        ll_state <= STANDBY;
+      end
     endcase
   end
 end
@@ -388,5 +399,5 @@ uart_frame_rx #(
   .frame_error(frame_error)
 );
 
-endmodule
-
+endmodule // btle_ll
+`endif
