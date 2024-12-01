@@ -11,6 +11,9 @@
 // LastEditTime: 2019-06-09 16:30:57
 // ********************************************************************
 // Module Function: generate uart rx sample clk = 9 x BAUD_RATE
+
+`ifndef __RX_CLK_GEN__
+`define __RX_CLK_GEN__
 `timescale 1ns / 1ps
 
 module rx_clk_gen
@@ -27,7 +30,7 @@ module rx_clk_gen
 );
 
 localparam	SMP_CLK_CNT	=	CLK_FREQUENCE/BAUD_RATE/9 - 1,
-			CNT_WIDTH	=	log2(SMP_CLK_CNT)			 ;
+			CNT_WIDTH	=	$clog2(SMP_CLK_CNT)			 ;
 
 reg		[CNT_WIDTH-1:0]	clk_count	;
 reg		cstate;
@@ -56,7 +59,9 @@ always @(posedge clk or negedge rst_n) begin
 		clk_count <= 'd0;
 	else if (!cstate) 
 		clk_count <= 'd0;
+	/* verilator lint_off WIDTHEXPAND */
 	else if (clk_count == SMP_CLK_CNT)
+	/* verilator lint_on WIDTHEXPAND */
 		clk_count <= 'd0;
 	else
 		clk_count <= clk_count + 1'b1;
@@ -65,18 +70,11 @@ end
 always @(posedge clk or negedge rst_n) begin
 	if (!rst_n) 
 		sample_clk <= 1'b0;
-	else if (clk_count == 1'b1) 
+	else if (clk_count == 'b1) 
 		sample_clk <= 1'b1;
 	else 
 		sample_clk <= 1'b0;
 end
-//get the width of sample_clk_counter
-function integer log2(input integer v);
-  begin
-	log2=0;
-	while(v>>log2) 
-	  log2=log2+1;
-  end
-endfunction
 
-endmodule
+endmodule // rx_clk_gen
+`endif
