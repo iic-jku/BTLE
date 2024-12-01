@@ -11,6 +11,10 @@
 // LastEditTime: 2019-06-09 16:31:56
 // ********************************************************************
 // Module Function:
+
+`ifndef __UART_FRAME_RX__
+`define __UART_FRAME_RX__
+`include "rx_clk_gen.v"
 `timescale 1ns / 1ps
 
 module uart_frame_rx
@@ -33,7 +37,7 @@ wire			sample_clk		;
 wire			frame_en		;		//once_rx_start
 reg				cnt_en			;		//sample_clk_cnt enable
 reg		[3:0]	sample_clk_cnt	;		
-reg		[log2(FRAME_WD+1)-1:0]		sample_bit_cnt	;
+reg		[$clog2(FRAME_WD+1)-1:0]		sample_bit_cnt	;
 wire			baud_rate_clk	;
 
 localparam	IDLE		=	5'b0_0000,
@@ -49,11 +53,17 @@ reg [4:0]	nstate;
 wire	[1:0]	verify_mode;
 generate
 	if (PARITY == "ODD")
-		assign verify_mode = 2'b01;
+		begin : g_parity_odd
+			assign verify_mode = 2'b01;
+		end
 	else if (PARITY == "EVEN")
-		assign verify_mode = 2'b10;
+		begin : g_parity_even
+			assign verify_mode = 2'b10;
+		end
 	else
-		assign verify_mode = 2'b00;
+		begin : g_parity_default
+			assign verify_mode = 2'b00;
+		end
 endgenerate
 //detect the start condition--the negedge of uart_rx
 reg		uart_rx0,uart_rx1,uart_rx2,uart_rx3;
@@ -115,7 +125,7 @@ end
 reg		[1:0]	sample_result	;
 always @(posedge clk or negedge rst_n) begin
 	if (!rst_n) 
-		sample_result <= 1'b0;
+		sample_result <= 2'b0;
 	else if (sample_clk) begin
 		case (sample_clk_cnt)
 			4'd0:sample_result <= 2'd0;
@@ -216,11 +226,5 @@ rx_clk_gen_inst
 	.sample_clk	 	( sample_clk )	
 );	
 
-function integer log2(input integer v);
-  begin
-	log2=0;
-	while(v>>log2) 
-	  log2=log2+1;
-  end
-endfunction
-endmodule
+endmodule // uart_frame_rx
+`endif
