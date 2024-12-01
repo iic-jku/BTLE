@@ -4,6 +4,10 @@
 
 // iverilog -o btle_phy btle_phy.v btle_rx.v btle_rx_core_tb.v btle_rx_core.v gfsk_demodulation.v search_unique_bit_sequence.v scramble_core.v crc24_core.v serial_in_ram_out.v dpram.v btle_tx.v crc24.v scramble.v gfsk_modulation.v bit_repeat_upsample.v gauss_filter.v vco.v 
 
+`ifndef __BTLE_PHY__
+`define __BTLE_PHY__
+`include "btle_rx.v"
+`include "btle_tx.v"
 `timescale 1ns / 1ps
 module btle_phy #
 (
@@ -167,5 +171,5 @@ btle_rx # (
   .pdu_octet_mem_addr(rx_pdu_octet_mem_addr)
 );
 
-endmodule
-
+endmodule // btle_phy
+`endif
