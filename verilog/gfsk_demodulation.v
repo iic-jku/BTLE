@@ -2,7 +2,10 @@
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
 // SPDX-License-Identifier: Apache-2.0 license
 
+`ifndef __GFSK_DEMODULATION__
+`define __GFSK_DEMODULATION__
 `timescale 1ns / 1ps
+
 module gfsk_demodulation #
 (
   parameter GFSK_DEMODULATION_BIT_WIDTH = 16
@@ -33,7 +36,7 @@ reg iq_valid_delay3;
 assign signal_for_decision_valid = iq_valid_delay2;
 assign bit_valid = iq_valid_delay3;
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     i0 <= 0;
     i1 <= 0;
@@ -64,4 +67,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
+endmodule // gfsk_demodulation
+`endif
