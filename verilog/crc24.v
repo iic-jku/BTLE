@@ -6,7 +6,11 @@
 // Assume clk speed 16M, info_bit 1M, info_bit_valid every 16 clk
 // CRC operation skips the 40 bits at the beginning (preamble+access_address)
 
+`ifndef __CRC24__
+`define __CRC24__
+`include "crc24_core.v"
 `timescale 1ns / 1ps
+
 module crc24 #
 (
   parameter CRC_STATE_BIT_WIDTH = 24
@@ -39,7 +43,7 @@ reg [3:0] clk_count;
 
 assign info_bit_valid_internal = (info_bit_count>=40? info_bit_valid : 0);
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     info_bit_after_crc24 <= 0;
     info_bit_after_crc24_valid <= 0;
@@ -93,6 +97,10 @@ always @ (posedge clk) begin
           info_bit_after_crc24_valid_last <= 0;
         end
       end
+
+      default: begin
+        crc_state <= IDLE;
+      end
     endcase
   end
 end
@@ -111,5 +119,5 @@ crc24_core # (
   .lfsr(lfsr)
 );
 
-endmodule
-
+endmodule // crc24
+`endif
