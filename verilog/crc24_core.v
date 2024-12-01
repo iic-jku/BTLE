@@ -4,7 +4,10 @@
 
 // Core_v5.3 figure3.4 on page 2734
 
+`ifndef __CRC24_CORE__
+`define __CRC24_CORE__
 `timescale 1ns / 1ps
+
 module crc24_core #
 (
   parameter CRC_STATE_BIT_WIDTH = 24
@@ -28,7 +31,7 @@ assign crc_state_init_bit_switch[(16+7):(16+0)] = crc_state_init_bit[7:0];
 
 assign new_bit = lfsr[23]^data_in;
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     // lfsr <= 0;
     lfsr <= crc_state_init_bit_switch;
@@ -55,5 +58,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
-
+endmodule // crc24_core
+`endif
