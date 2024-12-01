@@ -2,7 +2,13 @@
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
 // SPDX-License-Identifier: Apache-2.0 license
 
+`ifndef __GFSK_MODULATION__
+`define __GFSK_MODULATION__
+`include "vco.v"
+`include "bit_repeat_upsample.v"
+`include "gauss_filter.v"
 `timescale 1ns / 1ps
+
 module gfsk_modulation #
 (
   parameter SAMPLE_PER_SYMBOL = 8,
@@ -114,5 +120,5 @@ vco # (
   .sin_cos_out_valid_last(sin_cos_out_valid_last)
 );
 
-endmodule
-
+endmodule // gfsk_modulation
+`endif
