@@ -2,7 +2,11 @@
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
 // SPDX-License-Identifier: Apache-2.0 license
 
+`ifndef __SERIAL_IN_RAM_OUT__
+`define __SERIAL_IN_RAM_OUT__
+`include "dpram.v"
 `timescale 1ns / 1ps
+
 module serial_in_ram_out #
 (
   parameter DATA_WIDTH = 8,
@@ -20,7 +24,7 @@ module serial_in_ram_out #
 
 reg [(ADDRESS_WIDTH-1) : 0] addr_internal;
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     addr_internal <= 0;
   end else begin
@@ -45,5 +49,5 @@ dpram # (
   .read_data(data)
 );
 
-endmodule
-
+endmodule // serial_in_ram_out
+`endif
