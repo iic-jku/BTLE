@@ -11,7 +11,11 @@
 // LastEditTime: 2019-06-07 15:36:59
 // ********************************************************************
 // Module Function: generate_uart_tx_baud_rate_clk
+
+`ifndef __TX_CLK_GEN__
+`define __TX_CLK_GEN__
 `timescale 1ns / 1ps
+
 module tx_clk_gen
 #(
 	parameter	CLK_FREQUENCE	= 50_000_000,		//hz
@@ -26,7 +30,7 @@ module tx_clk_gen
 );
 
 localparam	BPS_CNT	=	CLK_FREQUENCE/BAUD_RATE-1,
-			BPS_WD	=	log2(BPS_CNT);
+			BPS_WD	=	$clog2(BPS_CNT);
 
 reg	[BPS_WD-1:0] count;
 reg c_state;
@@ -55,7 +59,9 @@ always @(posedge clk or negedge rst_n) begin
 	else if (!c_state)
 		count <= {BPS_WD{1'b0}};
 	else begin
-		if (count == BPS_CNT) 
+		/* verilator lint_off WIDTHEXPAND */
+		if (count == BPS_CNT)
+		/* verilator lint_on WIDTHEXPAND */
 			count <= {BPS_WD{1'b0}};
 		else
 			count <= count + 1'b1;
@@ -70,14 +76,6 @@ always @(posedge clk or negedge rst_n) begin
 	else
 		bps_clk <= 1'b0;
 end
-//get_the_width_of_
-function integer log2(input integer v);
-  begin
-	log2=0;
-	while(v>>log2) 
-	  log2=log2+1;
-  end
-endfunction
 
-endmodule
-
+endmodule // tx_clk_gen
+`endif
