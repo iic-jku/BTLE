@@ -2,7 +2,14 @@
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
 // SPDX-License-Identifier: Apache-2.0 license
 
+`ifndef __BTLE_RX_CORE__
+`define __BTLE_RX_CORE__
+`include "gfsk_demodulation.v"
+`include "search_unique_bit_sequence.v"
+`include "scramble_core.v"
+`include "crc24_core.v"
 `timescale 1ns / 1ps
+
 module btle_rx_core #
 (
   parameter GFSK_DEMODULATION_BIT_WIDTH = 16,
@@ -52,6 +59,11 @@ reg  [9:0] bit_count;
 wire [6:0] octet_count;
 // reg  [6:0] payload_length;
 
+/* verilator lint_off UNUSEDSIGNAL */
+wire [31:0] dummy1;
+wire dummy2;
+/* verilator lint_on UNUSEDSIGNAL */
+
 assign adv_pdu_flag = (channel_number==37 || channel_number==38 || channel_number==39);
 
 assign octet_count = bit_count[9:3];
@@ -59,7 +71,7 @@ assign octet_count = bit_count[9:3];
 assign crc24_bit = lfsr;
 
 // state machine to extract payload length and check crc
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     bit_valid_delay <= 0;
     octet <= 0;
@@ -94,7 +106,7 @@ always @ (posedge clk) begin
           bit_count <= bit_count + 1;
         end
         if (octet_count == 2) begin
-          payload_length <= (adv_pdu_flag? octet[5:0] : octet[4:0]);
+          payload_length <= (adv_pdu_flag? {1'b0,octet[5:0]} : {2'b0,octet[4:0]});
           payload_length_valid <= 1;
           bit_count <= 0;
           phy_rx_state <= CHECK_CRC;
@@ -127,6 +139,10 @@ always @ (posedge clk) begin
           octet_valid <= 0;
         end
       end
+
+      default: begin
+        phy_rx_state <= IDLE;
+      end
     endcase
   end
 end
@@ -141,8 +157,8 @@ gfsk_demodulation # (
   .q(q),
   .iq_valid(iq_valid),
 
-  .signal_for_decision(),
-  .signal_for_decision_valid(),
+  .signal_for_decision(dummy1),
+  .signal_for_decision_valid(dummy2),
   
   .phy_bit(phy_bit),
   .bit_valid(phy_bit_valid)
@@ -190,5 +206,5 @@ crc24_core # (
   .lfsr(lfsr)
 );
 
-endmodule
-
+endmodule // btle_rx_core
+`endif
