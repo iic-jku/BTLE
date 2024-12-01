@@ -20,6 +20,9 @@
 // OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 // PERFORMANCE OF THIS SOFTWARE.
 
+`ifndef __DPRAM__
+`define __DPRAM__
+
 `timescale 1ns / 1ps
 module dpram #
 (
@@ -38,11 +41,11 @@ module dpram #
 );
 
 reg [DATA_WIDTH-1:0] memory [0:(1<<ADDRESS_WIDTH)-1];
-integer i;
+// integer i;
 
 assign read_data = memory[read_address];
 
-always @ (posedge clk) begin
+always @ (posedge clk or posedge rst) begin
   if (rst) begin
     // memory <= 0;
     // // for(i=0; i<(1<<ADDRESS_WIDTH); i=i+1)
@@ -54,4 +57,5 @@ always @ (posedge clk) begin
   end
 end
 
-endmodule
+endmodule // dpram
+`endif 
