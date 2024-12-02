@@ -13,7 +13,7 @@
 
 module gauss_filter #
 (
-  parameter GAUSS_FILTER_BIT_WIDTH = 6, // [HP] change from 16 to 6
+  parameter GAUSS_FILTER_BIT_WIDTH = 5, // [HP] change from 16 to 5
   parameter NUM_TAP_GAUSS_FILTER = 17
 ) (
   input wire clk,

@@ -24,7 +24,7 @@ module btle_controller #
   parameter CRC_STATE_BIT_WIDTH = 24,
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6,
   parameter SAMPLE_PER_SYMBOL = 8,
-  parameter GAUSS_FILTER_BIT_WIDTH = 6, // [HP] change from 16 to 6
+  parameter GAUSS_FILTER_BIT_WIDTH = 5, // [HP] change from 16 to 5
   parameter NUM_TAP_GAUSS_FILTER = 17,
 `ifdef BTLE_TX_IQ
   parameter VCO_BIT_WIDTH = 16,
@@ -32,7 +32,7 @@ module btle_controller #
   parameter IQ_BIT_WIDTH = 8,
   parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1,
 `endif
-  parameter GFSK_DEMODULATION_BIT_WIDTH = 4, // [HP] change from 16 to 4
+  parameter GFSK_DEMODULATION_BIT_WIDTH = 5, // [HP] change from 16 to 5
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32
 ) (
   input clk,

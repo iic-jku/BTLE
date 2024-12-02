@@ -15,7 +15,7 @@
 module btle_rx #
 (
   parameter SAMPLE_PER_SYMBOL = 8,
-  parameter GFSK_DEMODULATION_BIT_WIDTH = 16,
+  parameter GFSK_DEMODULATION_BIT_WIDTH = 5, // [HP] change from 16 to 5
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32,
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6,
   parameter CRC_STATE_BIT_WIDTH = 24

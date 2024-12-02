@@ -14,7 +14,7 @@
 
 module btle_rx_core #
 (
-  parameter GFSK_DEMODULATION_BIT_WIDTH = 4, // [HP] change from 16 to 4
+  parameter GFSK_DEMODULATION_BIT_WIDTH = 5, // [HP] change from 16 to 5
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32,
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6,
   parameter CRC_STATE_BIT_WIDTH = 24

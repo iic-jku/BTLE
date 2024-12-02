@@ -10,7 +10,7 @@
 
 module gfsk_demodulation #
 (
-  parameter GFSK_DEMODULATION_BIT_WIDTH = 4 // [HP] change from 16 to 4
+  parameter GFSK_DEMODULATION_BIT_WIDTH = 5 // [HP] change from 16 to 4
 ) (
   input wire clk,
   input wire rst,
