@@ -49,6 +49,9 @@ module btle_controller #
   output wire tx_iq_valid,
   output wire tx_iq_valid_last,
 `endif
+`ifdef BTLE_TX_POLAR
+  output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
+`endif
   input wire  signed [(GFSK_DEMODULATION_BIT_WIDTH-1) : 0] rx_i_signal,
   input wire  signed [(GFSK_DEMODULATION_BIT_WIDTH-1) : 0] rx_q_signal,
   input wire  rx_iq_valid,
@@ -294,6 +297,10 @@ btle_phy #
   .tx_iq_valid(tx_iq_valid),
   .tx_iq_valid_last(tx_iq_valid_last),
 `endif
+`ifdef BTLE_TX_POLAR
+  .fmod(fmod),
+`endif
+
   // for phy tx debug purpose
   .tx_phy_bit(ext_tx_phy_bit),
   .tx_phy_bit_valid(ext_tx_phy_bit_valid),

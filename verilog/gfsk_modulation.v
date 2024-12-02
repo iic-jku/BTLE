@@ -49,6 +49,10 @@ module gfsk_modulation #
   output wire sin_cos_out_valid_last, 
 `endif
 
+`ifdef BTLE_TX_POLAR
+  output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
+`endif
+
   // for debug purpose
   output wire bit_upsample,
   output wire bit_upsample_valid,
@@ -72,6 +76,10 @@ module gfsk_modulation #
 //     $display("%d", bit_upsample_gauss_filter);
 //   end
 // end
+
+`ifdef BTLE_TX_POLAR
+assign fmod = bit_upsample_gauss_filter; 
+`endif
 
 bit_repeat_upsample # (
   .SAMPLE_PER_SYMBOL(SAMPLE_PER_SYMBOL)        

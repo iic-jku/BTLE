@@ -59,6 +59,10 @@ module btle_phy #
   output wire tx_iq_valid,
   output wire tx_iq_valid_last,
 `endif
+`ifdef BTLE_TX_POLAR
+  output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
+`endif
+
   // for tx debug purpose
   output wire tx_phy_bit,
   output wire tx_phy_bit_valid,
@@ -134,6 +138,10 @@ btle_tx # (
   .iq_valid(tx_iq_valid),
   .iq_valid_last(tx_iq_valid_last),
 `endif
+`ifdef BTLE_TX_POLAR
+  .fmod(fmod),
+`endif
+
   // for debug purpose
   .phy_bit(tx_phy_bit),
   .phy_bit_valid(tx_phy_bit_valid),

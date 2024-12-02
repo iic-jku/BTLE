@@ -61,6 +61,10 @@ module btle_tx #
   output wire iq_valid_last,
 `endif
 
+`ifdef BTLE_TX_POLAR
+  output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
+`endif
+
   // for debug purpose
   output wire phy_bit,
   output wire phy_bit_valid,
@@ -308,6 +312,9 @@ gfsk_modulation # (
   .sin_cos_out_valid_last(iq_valid_last),
 `endif
 
+`ifdef BTLE_TX_POLAR
+  .fmod(fmod),
+`endif
   .bit_upsample(bit_upsample),
   .bit_upsample_valid(bit_upsample_valid),
   .bit_upsample_valid_last(bit_upsample_valid_last),
