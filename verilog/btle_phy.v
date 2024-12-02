@@ -1,14 +1,17 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // iverilog -o btle_phy btle_phy.v btle_rx.v btle_rx_core_tb.v btle_rx_core.v gfsk_demodulation.v search_unique_bit_sequence.v scramble_core.v crc24_core.v serial_in_ram_out.v dpram.v btle_tx.v crc24.v scramble.v gfsk_modulation.v bit_repeat_upsample.v gauss_filter.v vco.v 
 
 `ifndef __BTLE_PHY__
 `define __BTLE_PHY__
+`include "btle_config.v"
 `include "btle_rx.v"
 `include "btle_tx.v"
-`timescale 1ns / 1ps
+
 module btle_phy #
 (
   parameter CRC_STATE_BIT_WIDTH = 24,
@@ -16,11 +19,12 @@ module btle_phy #
   parameter SAMPLE_PER_SYMBOL = 8,
   parameter GAUSS_FILTER_BIT_WIDTH = 16,
   parameter NUM_TAP_GAUSS_FILTER = 17,
+`ifdef BTLE_TX_IQ
   parameter VCO_BIT_WIDTH = 16,
   parameter SIN_COS_ADDR_BIT_WIDTH = 11,
   parameter IQ_BIT_WIDTH = 8,
   parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1,
-
+`endif
   parameter GFSK_DEMODULATION_BIT_WIDTH = 16,
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32
 ) (
@@ -31,11 +35,12 @@ module btle_phy #
   input wire [3:0] tx_gauss_filter_tap_index, // only need to set 0~8, 9~16 will be mirror of 0~7
   input wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] tx_gauss_filter_tap_value,
 
+`ifdef BTLE_TX_IQ
   input wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] tx_cos_table_write_address,
   input wire signed [(IQ_BIT_WIDTH-1) : 0] tx_cos_table_write_data,
   input wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] tx_sin_table_write_address,
   input wire signed [(IQ_BIT_WIDTH-1) : 0] tx_sin_table_write_data,
-
+`endif
   input wire [7:0]  tx_preamble,
 
   input wire [31:0] tx_access_address,
@@ -48,12 +53,12 @@ module btle_phy #
   input wire [5:0] tx_pdu_octet_mem_addr,
 
   input wire tx_start,
-
+`ifdef BTLE_TX_IQ
   output wire signed [(IQ_BIT_WIDTH-1) : 0] tx_i_signal,
   output wire signed [(IQ_BIT_WIDTH-1) : 0] tx_q_signal,
   output wire tx_iq_valid,
   output wire tx_iq_valid_last,
-
+`endif
   // for tx debug purpose
   output wire tx_phy_bit,
   output wire tx_phy_bit_valid,
@@ -91,24 +96,26 @@ btle_tx # (
 .CRC_STATE_BIT_WIDTH(CRC_STATE_BIT_WIDTH),
 .CHANNEL_NUMBER_BIT_WIDTH(CHANNEL_NUMBER_BIT_WIDTH),
 .SAMPLE_PER_SYMBOL(SAMPLE_PER_SYMBOL),
-.GAUSS_FILTER_BIT_WIDTH(GAUSS_FILTER_BIT_WIDTH),
-.NUM_TAP_GAUSS_FILTER(NUM_TAP_GAUSS_FILTER),
+`ifdef BTLE_TX_IQ
 .VCO_BIT_WIDTH(VCO_BIT_WIDTH),
 .SIN_COS_ADDR_BIT_WIDTH(SIN_COS_ADDR_BIT_WIDTH),
 .IQ_BIT_WIDTH(IQ_BIT_WIDTH),
-.GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT(GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT)
+.GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT(GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT),
+`endif
+.GAUSS_FILTER_BIT_WIDTH(GAUSS_FILTER_BIT_WIDTH),
+.NUM_TAP_GAUSS_FILTER(NUM_TAP_GAUSS_FILTER)
 ) btle_tx_i (
   .clk(clk),
   .rst(rst),
 
   .gauss_filter_tap_index(tx_gauss_filter_tap_index),
   .gauss_filter_tap_value(tx_gauss_filter_tap_value),
-
+`ifdef BTLE_TX_IQ
   .cos_table_write_address(tx_cos_table_write_address),
   .cos_table_write_data(tx_cos_table_write_data),
   .sin_table_write_address(tx_sin_table_write_address),
   .sin_table_write_data(tx_sin_table_write_data),
-  
+`endif
   .preamble(tx_preamble),
 
   .access_address(tx_access_address),
@@ -121,12 +128,12 @@ btle_tx # (
   .pdu_octet_mem_addr(tx_pdu_octet_mem_addr),
 
   .tx_start(tx_start),
-
+`ifdef BTLE_TX_IQ
   .i(tx_i_signal),
   .q(tx_q_signal),
   .iq_valid(tx_iq_valid),
   .iq_valid_last(tx_iq_valid_last),
-
+`endif
   // for debug purpose
   .phy_bit(tx_phy_bit),
   .phy_bit_valid(tx_phy_bit_valid),

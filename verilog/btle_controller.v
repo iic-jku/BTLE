@@ -1,5 +1,7 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // btle_controller = btle_ll (link layer) + btle_phy (phy: btle_tx and btle_rx)
@@ -8,9 +10,9 @@
 
 `ifndef __BTLE_CONTROLLER__
 `define __BTLE_CONTROLLER__
+`include "btle_config.v"
 `include "btle_ll.v"
 `include "btle_phy.v"
-`timescale 1ns / 1ps
 
 module btle_controller #
 (
@@ -24,11 +26,12 @@ module btle_controller #
   parameter SAMPLE_PER_SYMBOL = 8,
   parameter GAUSS_FILTER_BIT_WIDTH = 16,
   parameter NUM_TAP_GAUSS_FILTER = 17,
+`ifdef BTLE_TX_IQ
   parameter VCO_BIT_WIDTH = 16,
   parameter SIN_COS_ADDR_BIT_WIDTH = 11,
   parameter IQ_BIT_WIDTH = 8,
   parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1,
-
+`endif
   parameter GFSK_DEMODULATION_BIT_WIDTH = 16,
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32
 ) (
@@ -40,11 +43,12 @@ module btle_controller #
   output uart_tx,
 
   // =========================to zero-IF RF transceiver====================
+`ifdef BTLE_TX_IQ
   output wire signed [(IQ_BIT_WIDTH-1) : 0] tx_i_signal,
   output wire signed [(IQ_BIT_WIDTH-1) : 0] tx_q_signal,
   output wire tx_iq_valid,
   output wire tx_iq_valid_last,
-
+`endif
   input wire  signed [(GFSK_DEMODULATION_BIT_WIDTH-1) : 0] rx_i_signal,
   input wire  signed [(GFSK_DEMODULATION_BIT_WIDTH-1) : 0] rx_q_signal,
   input wire  rx_iq_valid,
@@ -54,12 +58,12 @@ module btle_controller #
   // for phy tx
   input wire [3:0] ext_tx_gauss_filter_tap_index, // only need to set 0~8, 9~16 will be mirror of 0~7
   input wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] ext_tx_gauss_filter_tap_value,
-
+`ifdef BTLE_TX_IQ
   input wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] ext_tx_cos_table_write_address,
   input wire signed [(IQ_BIT_WIDTH-1) : 0] ext_tx_cos_table_write_data,
   input wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] ext_tx_sin_table_write_address,
   input wire signed [(IQ_BIT_WIDTH-1) : 0] ext_tx_sin_table_write_data,
-
+`endif
   input wire [7:0]  ext_tx_preamble,
 
   input wire [31:0] ext_tx_access_address,
@@ -105,12 +109,12 @@ module btle_controller #
 // =================link layer to phy tx======================
 wire [3:0] ll_tx_gauss_filter_tap_index;
 wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] ll_tx_gauss_filter_tap_value;
-
+`ifdef BTLE_TX_IQ
 wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] ll_tx_cos_table_write_address;
 wire signed [(IQ_BIT_WIDTH-1) : 0] ll_tx_cos_table_write_data;
 wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] ll_tx_sin_table_write_address;
 wire signed [(IQ_BIT_WIDTH-1) : 0] ll_tx_sin_table_write_data;
-
+`endif
 wire [7:0]  ll_tx_preamble;
 
 wire [31:0] ll_tx_access_address;
@@ -124,12 +128,12 @@ wire ll_tx_start;
 // ===========================phy tx=========================
 wire [3:0] tx_gauss_filter_tap_index;
 wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] tx_gauss_filter_tap_value;
-
+`ifdef BTLE_TX_IQ
 wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] tx_cos_table_write_address;
 wire signed [(IQ_BIT_WIDTH-1) : 0] tx_cos_table_write_data;
 wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] tx_sin_table_write_address;
 wire signed [(IQ_BIT_WIDTH-1) : 0] tx_sin_table_write_data;
-
+`endif
 wire [7:0]  tx_preamble;
 
 wire [31:0] tx_access_address;
@@ -160,12 +164,12 @@ wire  [5:0] rx_pdu_octet_mem_addr;
 // phy tx
 assign tx_gauss_filter_tap_index = (baremetal_phy_intf_mode? ext_tx_gauss_filter_tap_index : ll_tx_gauss_filter_tap_index);
 assign tx_gauss_filter_tap_value = (baremetal_phy_intf_mode? ext_tx_gauss_filter_tap_value : ll_tx_gauss_filter_tap_value);
-
+`ifdef BTLE_TX_IQ
 assign tx_cos_table_write_address = (baremetal_phy_intf_mode? ext_tx_cos_table_write_address : ll_tx_cos_table_write_address);
 assign tx_cos_table_write_data = (baremetal_phy_intf_mode? ext_tx_cos_table_write_data : ll_tx_cos_table_write_data);
 assign tx_sin_table_write_address = (baremetal_phy_intf_mode? ext_tx_sin_table_write_address : ll_tx_sin_table_write_address);
 assign tx_sin_table_write_data = (baremetal_phy_intf_mode? ext_tx_sin_table_write_data : ll_tx_sin_table_write_data);
-
+`endif
 assign tx_preamble = (baremetal_phy_intf_mode? ext_tx_preamble : ll_tx_preamble);
 
 assign tx_access_address = (baremetal_phy_intf_mode? ext_tx_access_address : ll_tx_access_address);
@@ -192,8 +196,10 @@ btle_ll # (
   .FRAME_WD(FRAME_WD),
 
   .GAUSS_FILTER_BIT_WIDTH(GAUSS_FILTER_BIT_WIDTH),
+`ifdef BTLE_TX_IQ
   .SIN_COS_ADDR_BIT_WIDTH(SIN_COS_ADDR_BIT_WIDTH),
   .IQ_BIT_WIDTH(IQ_BIT_WIDTH),
+`endif
   .CRC_STATE_BIT_WIDTH(CRC_STATE_BIT_WIDTH),
   .CHANNEL_NUMBER_BIT_WIDTH(CHANNEL_NUMBER_BIT_WIDTH),
 
@@ -209,12 +215,12 @@ btle_ll # (
   // ====to phy tx====
   .tx_gauss_filter_tap_index(ll_tx_gauss_filter_tap_index), // only need to set 0~8, 9~16 will be mirror of 0~7
   .tx_gauss_filter_tap_value(ll_tx_gauss_filter_tap_value),
-
+`ifdef BTLE_TX_IQ
   .tx_cos_table_write_address(ll_tx_cos_table_write_address),
   .tx_cos_table_write_data(ll_tx_cos_table_write_data),
   .tx_sin_table_write_address(ll_tx_sin_table_write_address),
   .tx_sin_table_write_data(ll_tx_sin_table_write_data),
-
+`endif
   .tx_preamble(ll_tx_preamble),
 
   .tx_access_address(ll_tx_access_address),
@@ -224,7 +230,9 @@ btle_ll # (
   .tx_pdu_octet_mem_data(ll_tx_pdu_octet_mem_data),
   .tx_pdu_octet_mem_addr(ll_tx_pdu_octet_mem_addr),
   .tx_start(ll_tx_start),
+`ifdef BTLE_TX_IQ
   .tx_iq_valid_last(tx_iq_valid_last),
+`endif
 
   // ====to phy rx====
   .rx_unique_bit_sequence(ll_rx_unique_bit_sequence),
@@ -248,11 +256,12 @@ btle_phy #
   .SAMPLE_PER_SYMBOL(SAMPLE_PER_SYMBOL),
   .GAUSS_FILTER_BIT_WIDTH(GAUSS_FILTER_BIT_WIDTH),
   .NUM_TAP_GAUSS_FILTER(NUM_TAP_GAUSS_FILTER),
+`ifdef BTLE_TX_IQ
   .VCO_BIT_WIDTH(VCO_BIT_WIDTH),
   .SIN_COS_ADDR_BIT_WIDTH(SIN_COS_ADDR_BIT_WIDTH),
   .IQ_BIT_WIDTH(IQ_BIT_WIDTH),
   .GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT(GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT),
-
+`endif
   .GFSK_DEMODULATION_BIT_WIDTH(GFSK_DEMODULATION_BIT_WIDTH),
   .LEN_UNIQUE_BIT_SEQUENCE(LEN_UNIQUE_BIT_SEQUENCE)
 ) btle_phy_i (
@@ -261,12 +270,12 @@ btle_phy #
 
   .tx_gauss_filter_tap_index(tx_gauss_filter_tap_index),
   .tx_gauss_filter_tap_value(tx_gauss_filter_tap_value),
-
+`ifdef BTLE_TX_IQ
   .tx_cos_table_write_address(tx_cos_table_write_address),
   .tx_cos_table_write_data(tx_cos_table_write_data),
   .tx_sin_table_write_address(tx_sin_table_write_address),
   .tx_sin_table_write_data(tx_sin_table_write_data),
-
+`endif
   .tx_preamble(tx_preamble),
 
   .tx_access_address(tx_access_address),
@@ -279,12 +288,12 @@ btle_phy #
   .tx_pdu_octet_mem_addr(tx_pdu_octet_mem_addr),
 
   .tx_start(tx_start),
-
+`ifdef BTLE_TX_IQ
   .tx_i_signal(tx_i_signal),
   .tx_q_signal(tx_q_signal),
   .tx_iq_valid(tx_iq_valid),
   .tx_iq_valid_last(tx_iq_valid_last),
-
+`endif
   // for phy tx debug purpose
   .tx_phy_bit(ext_tx_phy_bit),
   .tx_phy_bit_valid(ext_tx_phy_bit_valid),

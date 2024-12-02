@@ -1,43 +1,53 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 `ifndef __GFSK_MODULATION__
 `define __GFSK_MODULATION__
+`include "btle_config.v"
+`ifdef BTLE_TX_IQ
 `include "vco.v"
+`endif
 `include "bit_repeat_upsample.v"
 `include "gauss_filter.v"
-`timescale 1ns / 1ps
 
 module gfsk_modulation #
 (
   parameter SAMPLE_PER_SYMBOL = 8,
-  parameter GAUSS_FILTER_BIT_WIDTH = 16,
-  parameter NUM_TAP_GAUSS_FILTER = 17,
+`ifdef BTLE_TX_IQ
   parameter VCO_BIT_WIDTH = 16,
   parameter SIN_COS_ADDR_BIT_WIDTH = 11,
   parameter IQ_BIT_WIDTH = 8,
-  parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1
+  parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1,
+`endif
+  parameter GAUSS_FILTER_BIT_WIDTH = 16,
+  parameter NUM_TAP_GAUSS_FILTER = 17
 ) (
   input wire clk,
   input wire rst,
 
   input wire [3:0] gauss_filter_tap_index, // only need to set 0~8, 9~16 will be mirror of 0~7
   input wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] gauss_filter_tap_value,
-  
+
+`ifdef BTLE_TX_IQ 
   input  wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] cos_table_write_address,
   input  wire signed [(IQ_BIT_WIDTH-1) : 0] cos_table_write_data,
   input  wire [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] sin_table_write_address,
   input  wire signed [(IQ_BIT_WIDTH-1) : 0] sin_table_write_data,
+`endif
 
   input wire phy_bit,
   input wire bit_valid,
   input wire bit_valid_last,
 
+`ifdef BTLE_TX_IQ
   output wire signed [(IQ_BIT_WIDTH-1) : 0] cos_out,
   output wire signed [(IQ_BIT_WIDTH-1) : 0] sin_out,
   output wire sin_cos_out_valid,
   output wire sin_cos_out_valid_last, 
+`endif
 
   // for debug purpose
   output wire bit_upsample,
@@ -97,6 +107,7 @@ gauss_filter # (
   .bit_upsample_gauss_filter_valid_last(bit_upsample_gauss_filter_valid_last)
 );
 
+`ifdef BTLE_TX_IQ
 vco # (
   .VCO_BIT_WIDTH(VCO_BIT_WIDTH),
   .SIN_COS_ADDR_BIT_WIDTH(SIN_COS_ADDR_BIT_WIDTH),
@@ -119,6 +130,7 @@ vco # (
   .sin_cos_out_valid(sin_cos_out_valid),
   .sin_cos_out_valid_last(sin_cos_out_valid_last)
 );
+`endif
 
 endmodule // gfsk_modulation
 `endif

@@ -1,5 +1,7 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // This link layer module interfaces with the host via UART HCI (Host Controller Interface), 
@@ -13,9 +15,9 @@
 
 `ifndef __BTLE_LL__
 `define __BTLE_LL__
+`include "btle_config.v"
 `include "uart_frame_rx.v"
 `include "uart_frame_tx.v"
-`timescale 1ns / 1ps
 
 module btle_ll # (
 	parameter	CLK_FREQUENCE	= 16_000_000,	//hz
@@ -24,8 +26,10 @@ module btle_ll # (
   parameter FRAME_WD		= 8,					    //if PARITY="NONE",it can be 5~9;else 5~8
 
   parameter GAUSS_FILTER_BIT_WIDTH = 16,
+`ifdef BTLE_TX_IQ
   parameter SIN_COS_ADDR_BIT_WIDTH = 11,
   parameter IQ_BIT_WIDTH = 8,
+`endif
   parameter CRC_STATE_BIT_WIDTH = 24,
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6,
 
@@ -41,12 +45,12 @@ module btle_ll # (
   // ====to phy tx====
   output reg [3:0] tx_gauss_filter_tap_index, // only need to set 0~8, 9~16 will be mirror of 0~7
   output reg signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] tx_gauss_filter_tap_value,
-
+`ifdef BTLE_TX_IQ
   output reg [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] tx_cos_table_write_address,
   output reg signed [(IQ_BIT_WIDTH-1) : 0] tx_cos_table_write_data,
   output reg [(SIN_COS_ADDR_BIT_WIDTH-1) : 0] tx_sin_table_write_address,
   output reg signed [(IQ_BIT_WIDTH-1) : 0] tx_sin_table_write_data,
-
+`endif
   output reg [7:0]  tx_preamble,
 
   output reg [31:0] tx_access_address,
@@ -56,7 +60,9 @@ module btle_ll # (
   output reg [7:0] tx_pdu_octet_mem_data,
   output reg [5:0] tx_pdu_octet_mem_addr,
   output reg tx_start,
+`ifdef BTLE_TX_IQ
   input  wire tx_iq_valid_last,
+`endif
 
   // ====to phy rx====
   output reg [(LEN_UNIQUE_BIT_SEQUENCE-1) : 0]  rx_unique_bit_sequence,
@@ -97,7 +103,10 @@ wire tx_done;
 
 wire [7:0] all_input;
 
-assign all_input = ({7'd0, tx_iq_valid_last}|
+assign all_input = (
+`ifdef BTLE_TX_IQ
+                   {7'd0, tx_iq_valid_last}|
+`endif
                    ({7'd0, rx_hit_flag}<<1)|
                    ({7'd0, rx_decode_run}<<2)|
                    ({7'd0, rx_decode_end}<<3)|
@@ -113,12 +122,12 @@ always @ (posedge clk or posedge rst) begin
   if (rst) begin
     tx_gauss_filter_tap_index <= 0;
     tx_gauss_filter_tap_value <= 0;
-
+`ifdef BTLE_TX_IQ
     tx_cos_table_write_address <= 0;
     tx_cos_table_write_data <= 0;
     tx_sin_table_write_address <= 0;
     tx_sin_table_write_data <= 0;
-
+`endif
     tx_preamble <= 0;
 
     tx_access_address <= 0;
@@ -143,12 +152,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
@@ -175,12 +184,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
@@ -207,12 +216,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
@@ -239,12 +248,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
@@ -271,12 +280,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
@@ -303,12 +312,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
@@ -335,12 +344,12 @@ always @ (posedge clk or posedge rst) begin
         // dummy logic. actual logic to be done
         tx_gauss_filter_tap_index <= tx_gauss_filter_tap_index+ 1;
         tx_gauss_filter_tap_value <= tx_gauss_filter_tap_value+ 1;
-
+`ifdef BTLE_TX_IQ
         tx_cos_table_write_address <= tx_cos_table_write_address+ 1;
         tx_cos_table_write_data <= tx_cos_table_write_data+ 1;
         tx_sin_table_write_address <= tx_sin_table_write_address+ 1;
         tx_sin_table_write_data <= tx_sin_table_write_data+ 1;
-
+`endif
         tx_preamble <= tx_preamble + 1;
 
         tx_access_address <= tx_access_address + 1;
