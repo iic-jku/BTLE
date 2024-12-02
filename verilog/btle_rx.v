@@ -35,13 +35,18 @@ module btle_rx #
   output reg  decode_run,
   output reg  decode_end,
   output reg  crc_ok,
+`ifdef BTLE_BAREMETAL
   output reg  [2:0] best_phase,
-  
+`endif
   output reg  [6:0] payload_length,
 
   output reg  [7:0] pdu_octet_mem_data,
   input  wire [5:0] pdu_octet_mem_addr
 );
+
+`ifndef BTLE_BAREMETAL
+reg  [2:0] best_phase;
+`endif
 
 // state machine output decode end
 localparam [0:0] IDLE                     = 0,

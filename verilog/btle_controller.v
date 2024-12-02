@@ -54,9 +54,18 @@ module btle_controller #
 `endif
   input wire  signed [(GFSK_DEMODULATION_BIT_WIDTH-1) : 0] rx_i_signal,
   input wire  signed [(GFSK_DEMODULATION_BIT_WIDTH-1) : 0] rx_q_signal,
+`ifdef BTLE_SYNTH
+  output wire [(CHANNEL_NUMBER_BIT_WIDTH-1) : 0] tx_channel_number,
+  output wire [(CHANNEL_NUMBER_BIT_WIDTH-1) : 0] rx_channel_number,
+`endif
+`ifdef BTLE_BAREMETAL
   input wire  rx_iq_valid,
+`else
+  input wire  rx_iq_valid
+`endif
 
   // ====baremetal phy interface. should be via uart in the future====
+`ifdef BTLE_BAREMETAL
   input wire baremetal_phy_intf_mode, //currently 1 for external access. should be 0 in the future to let btle_ll control phy
   // for phy tx
   input wire [3:0] ext_tx_gauss_filter_tap_index, // only need to set 0~8, 9~16 will be mirror of 0~7
@@ -107,7 +116,17 @@ module btle_controller #
 
   input  wire  [5:0] ext_rx_pdu_octet_mem_addr,
   output wire  [7:0] ext_rx_pdu_octet_mem_data
+`endif
 );
+
+`ifndef BTLE_BAREMETAL
+wire  ext_rx_hit_flag;
+wire  ext_rx_decode_run;
+wire  ext_rx_decode_end;
+wire  ext_rx_crc_ok;
+wire  [6:0] ext_rx_payload_length;
+wire  [7:0] ext_rx_pdu_octet_mem_data;
+`endif
 
 // =================link layer to phy tx======================
 wire [3:0] ll_tx_gauss_filter_tap_index;
@@ -142,7 +161,9 @@ wire [7:0]  tx_preamble;
 wire [31:0] tx_access_address;
 wire [(CRC_STATE_BIT_WIDTH-1) : 0] tx_crc_state_init_bit;
 wire tx_crc_state_init_bit_load;
+`ifndef BTLE_SYNTH
 wire [(CHANNEL_NUMBER_BIT_WIDTH-1) : 0] tx_channel_number;
+`endif
 wire tx_channel_number_load;
 
 wire [7:0] tx_pdu_octet_mem_data;
@@ -158,39 +179,71 @@ wire  [5:0] ll_rx_pdu_octet_mem_addr;
 
 // =======================phy rx============================
 wire [(LEN_UNIQUE_BIT_SEQUENCE-1) : 0]  rx_unique_bit_sequence;
+`ifndef BTLE_SYNTH
 wire [(CHANNEL_NUMBER_BIT_WIDTH-1) : 0] rx_channel_number;
+`endif
 wire [(CRC_STATE_BIT_WIDTH-1) : 0]      rx_crc_state_init_bit;
 
 wire  [5:0] rx_pdu_octet_mem_addr;
 
 // =======switch between external baremetal phy control and link layer phy control========
-// phy tx
-assign tx_gauss_filter_tap_index = (baremetal_phy_intf_mode? ext_tx_gauss_filter_tap_index : ll_tx_gauss_filter_tap_index);
-assign tx_gauss_filter_tap_value = (baremetal_phy_intf_mode? ext_tx_gauss_filter_tap_value : ll_tx_gauss_filter_tap_value);
-`ifdef BTLE_TX_IQ
-assign tx_cos_table_write_address = (baremetal_phy_intf_mode? ext_tx_cos_table_write_address : ll_tx_cos_table_write_address);
-assign tx_cos_table_write_data = (baremetal_phy_intf_mode? ext_tx_cos_table_write_data : ll_tx_cos_table_write_data);
-assign tx_sin_table_write_address = (baremetal_phy_intf_mode? ext_tx_sin_table_write_address : ll_tx_sin_table_write_address);
-assign tx_sin_table_write_data = (baremetal_phy_intf_mode? ext_tx_sin_table_write_data : ll_tx_sin_table_write_data);
+`ifdef BTLE_BAREMETAL
+  // phy tx
+  assign tx_gauss_filter_tap_index = (baremetal_phy_intf_mode? ext_tx_gauss_filter_tap_index : ll_tx_gauss_filter_tap_index);
+  assign tx_gauss_filter_tap_value = (baremetal_phy_intf_mode? ext_tx_gauss_filter_tap_value : ll_tx_gauss_filter_tap_value);
+  `ifdef BTLE_TX_IQ
+  assign tx_cos_table_write_address = (baremetal_phy_intf_mode? ext_tx_cos_table_write_address : ll_tx_cos_table_write_address);
+  assign tx_cos_table_write_data = (baremetal_phy_intf_mode? ext_tx_cos_table_write_data : ll_tx_cos_table_write_data);
+  assign tx_sin_table_write_address = (baremetal_phy_intf_mode? ext_tx_sin_table_write_address : ll_tx_sin_table_write_address);
+  assign tx_sin_table_write_data = (baremetal_phy_intf_mode? ext_tx_sin_table_write_data : ll_tx_sin_table_write_data);
+  `endif
+  assign tx_preamble = (baremetal_phy_intf_mode? ext_tx_preamble : ll_tx_preamble);
+
+  assign tx_access_address = (baremetal_phy_intf_mode? ext_tx_access_address : ll_tx_access_address);
+  assign tx_crc_state_init_bit = (baremetal_phy_intf_mode? ext_tx_crc_state_init_bit : ll_tx_crc_state_init_bit);
+  assign tx_crc_state_init_bit_load = (baremetal_phy_intf_mode? ext_tx_crc_state_init_bit_load : ll_tx_start);
+  assign tx_channel_number = (baremetal_phy_intf_mode? ext_tx_channel_number : ll_tx_channel_number);
+  assign tx_channel_number_load = (baremetal_phy_intf_mode? ext_tx_channel_number_load : ll_tx_start);
+
+  assign tx_pdu_octet_mem_data = (baremetal_phy_intf_mode? ext_tx_pdu_octet_mem_data : ll_tx_pdu_octet_mem_data);
+  assign tx_pdu_octet_mem_addr = (baremetal_phy_intf_mode? ext_tx_pdu_octet_mem_addr : ll_tx_pdu_octet_mem_addr);
+  assign tx_start = (baremetal_phy_intf_mode? ext_tx_start : ll_tx_start);
+
+  // phy rx
+  assign rx_unique_bit_sequence = (baremetal_phy_intf_mode? ext_rx_unique_bit_sequence : ll_rx_unique_bit_sequence);
+  assign rx_channel_number = (baremetal_phy_intf_mode? ext_rx_channel_number : ll_rx_channel_number);
+  assign rx_crc_state_init_bit = (baremetal_phy_intf_mode? ext_rx_crc_state_init_bit : ll_rx_crc_state_init_bit);
+
+  assign rx_pdu_octet_mem_addr = (baremetal_phy_intf_mode? ext_rx_pdu_octet_mem_addr : ll_rx_pdu_octet_mem_addr);
+`else
+  // phy tx
+  assign tx_gauss_filter_tap_index = ll_tx_gauss_filter_tap_index;
+  assign tx_gauss_filter_tap_value = ll_tx_gauss_filter_tap_value;
+  `ifdef BTLE_TX_IQ
+  assign tx_cos_table_write_address = ll_tx_cos_table_write_address;
+  assign tx_cos_table_write_data = ll_tx_cos_table_write_data;
+  assign tx_sin_table_write_address = ll_tx_sin_table_write_address;
+  assign tx_sin_table_write_data = ll_tx_sin_table_write_data;
+  `endif
+  assign tx_preamble = ll_tx_preamble;
+
+  assign tx_access_address = ll_tx_access_address;
+  assign tx_crc_state_init_bit = ll_tx_crc_state_init_bit;
+  assign tx_crc_state_init_bit_load = ll_tx_start;
+  assign tx_channel_number = ll_tx_channel_number;
+  assign tx_channel_number_load = ll_tx_start;
+
+  assign tx_pdu_octet_mem_data = ll_tx_pdu_octet_mem_data;
+  assign tx_pdu_octet_mem_addr = ll_tx_pdu_octet_mem_addr;
+  assign tx_start = ll_tx_start;
+
+  // phy rx
+  assign rx_unique_bit_sequence = ll_rx_unique_bit_sequence;
+  assign rx_channel_number = ll_rx_channel_number;
+  assign rx_crc_state_init_bit = ll_rx_crc_state_init_bit;
+
+  assign rx_pdu_octet_mem_addr = ll_rx_pdu_octet_mem_addr;
 `endif
-assign tx_preamble = (baremetal_phy_intf_mode? ext_tx_preamble : ll_tx_preamble);
-
-assign tx_access_address = (baremetal_phy_intf_mode? ext_tx_access_address : ll_tx_access_address);
-assign tx_crc_state_init_bit = (baremetal_phy_intf_mode? ext_tx_crc_state_init_bit : ll_tx_crc_state_init_bit);
-assign tx_crc_state_init_bit_load = (baremetal_phy_intf_mode? ext_tx_crc_state_init_bit_load : ll_tx_start);
-assign tx_channel_number = (baremetal_phy_intf_mode? ext_tx_channel_number : ll_tx_channel_number);
-assign tx_channel_number_load = (baremetal_phy_intf_mode? ext_tx_channel_number_load : ll_tx_start);
-
-assign tx_pdu_octet_mem_data = (baremetal_phy_intf_mode? ext_tx_pdu_octet_mem_data : ll_tx_pdu_octet_mem_data);
-assign tx_pdu_octet_mem_addr = (baremetal_phy_intf_mode? ext_tx_pdu_octet_mem_addr : ll_tx_pdu_octet_mem_addr);
-assign tx_start = (baremetal_phy_intf_mode? ext_tx_start : ll_tx_start);
-
-// phy rx
-assign rx_unique_bit_sequence = (baremetal_phy_intf_mode? ext_rx_unique_bit_sequence : ll_rx_unique_bit_sequence);
-assign rx_channel_number = (baremetal_phy_intf_mode? ext_rx_channel_number : ll_rx_channel_number);
-assign rx_crc_state_init_bit = (baremetal_phy_intf_mode? ext_rx_crc_state_init_bit : ll_rx_crc_state_init_bit);
-
-assign rx_pdu_octet_mem_addr = (baremetal_phy_intf_mode? ext_rx_pdu_octet_mem_addr : ll_rx_pdu_octet_mem_addr);
 
 btle_ll # (
   .CLK_FREQUENCE(CLK_FREQUENCE),
@@ -247,9 +300,8 @@ btle_ll # (
   .rx_decode_end(ext_rx_decode_end),
   .rx_crc_ok(ext_rx_crc_ok),
   .rx_payload_length(ext_rx_payload_length),
-
-  .rx_pdu_octet_mem_addr(ll_rx_pdu_octet_mem_addr),
-  .rx_pdu_octet_mem_data(ext_rx_pdu_octet_mem_data)
+  .rx_pdu_octet_mem_data(ext_rx_pdu_octet_mem_data),
+  .rx_pdu_octet_mem_addr(ll_rx_pdu_octet_mem_addr)
 );
 
 btle_phy #
@@ -302,6 +354,7 @@ btle_phy #
 `endif
 
   // for phy tx debug purpose
+`ifdef BTLE_BAREMETAL
   .tx_phy_bit(ext_tx_phy_bit),
   .tx_phy_bit_valid(ext_tx_phy_bit_valid),
   .tx_phy_bit_valid_last(ext_tx_phy_bit_valid_last),
@@ -313,7 +366,7 @@ btle_phy #
   .tx_bit_upsample_gauss_filter(ext_tx_bit_upsample_gauss_filter),
   .tx_bit_upsample_gauss_filter_valid(ext_tx_bit_upsample_gauss_filter_valid),
   .tx_bit_upsample_gauss_filter_valid_last(ext_tx_bit_upsample_gauss_filter_valid_last),
-
+`endif
   // for rx
   .rx_unique_bit_sequence(rx_unique_bit_sequence),
   .rx_channel_number(rx_channel_number),
@@ -327,11 +380,12 @@ btle_phy #
   .rx_decode_run(ext_rx_decode_run),
   .rx_decode_end(ext_rx_decode_end),
   .rx_crc_ok(ext_rx_crc_ok),
+`ifdef BTLE_BAREMETAL
   .rx_best_phase(ext_rx_best_phase),
+`endif
   .rx_payload_length(ext_rx_payload_length),
-
-  .rx_pdu_octet_mem_addr(rx_pdu_octet_mem_addr),
-  .rx_pdu_octet_mem_data(ext_rx_pdu_octet_mem_data)
+  .rx_pdu_octet_mem_data(ext_rx_pdu_octet_mem_data),
+  .rx_pdu_octet_mem_addr(rx_pdu_octet_mem_addr)
 );
 
 endmodule // btle_controller

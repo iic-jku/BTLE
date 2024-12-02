@@ -38,10 +38,6 @@ module gfsk_modulation #
   input  wire signed [(IQ_BIT_WIDTH-1) : 0] sin_table_write_data,
 `endif
 
-  input wire phy_bit,
-  input wire bit_valid,
-  input wire bit_valid_last,
-
 `ifdef BTLE_TX_IQ
   output wire signed [(IQ_BIT_WIDTH-1) : 0] cos_out,
   output wire signed [(IQ_BIT_WIDTH-1) : 0] sin_out,
@@ -53,23 +49,40 @@ module gfsk_modulation #
   output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
 `endif
 
+`ifdef BTLE_BAREMETAL
   // for debug purpose
-  output wire bit_upsample,
-  output wire bit_upsample_valid,
-  output wire bit_upsample_valid_last,
+  output bit_upsample,
+  output bit_upsample_valid,
+  output bit_upsample_valid_last,
 
-  output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] bit_upsample_gauss_filter,
-  output wire bit_upsample_gauss_filter_valid,
-  output wire bit_upsample_gauss_filter_valid_last
+  output [(GAUSS_FILTER_BIT_WIDTH-1) : 0] bit_upsample_gauss_filter,
+  output bit_upsample_gauss_filter_valid,
+`endif
+
+  output bit_upsample_gauss_filter_valid_last,
+
+  input wire phy_bit,
+  input wire bit_valid,
+  input wire bit_valid_last
 );
 
-// wire bit_upsample;
-// wire bit_upsample_valid;
-// wire bit_upsample_valid_last;
+`ifndef BTLE_BAREMETAL
+wire bit_upsample;
+wire bit_upsample_valid;
+wire bit_upsample_valid_last;
 
-// wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] bit_upsample_gauss_filter;
-// wire bit_upsample_gauss_filter_valid;
-// wire bit_upsample_gauss_filter_valid_last;
+/* verilator lint_off UNUSEDSIGNAL */
+wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] bit_upsample_gauss_filter;
+/* verilator lint_on UNUSEDSIGNAL */
+
+`ifndef BTLE_TX_IQ
+/* verilator lint_off UNUSEDSIGNAL */
+`endif
+wire bit_upsample_gauss_filter_valid;
+`ifndef BTLE_TX_IQ
+/* verilator lint_on UNUSEDSIGNAL */
+`endif
+`endif
 
 // always @ (posedge clk) begin
 //   if (bit_upsample_gauss_filter_valid) begin
@@ -129,7 +142,7 @@ vco # (
   .sin_table_write_address(sin_table_write_address),
   .sin_table_write_data(sin_table_write_data),
 
-  .voltage_signal({{GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT{1'b1}}, bit_upsample_gauss_filter[(GAUSS_FILTER_BIT_WIDTH-1) : GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT]}),
+  .voltage_signal({{GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT{1'b1}}, bit_upsample_gauss_filter[(GAUSS_FILTER_BIT_WIDTH-1) : GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT], {(VCO_BIT_WIDTH-GAUSS_FILTER_BIT_WIDTH){1'b0}}}),
   .voltage_signal_valid(bit_upsample_gauss_filter_valid),
   .voltage_signal_valid_last(bit_upsample_gauss_filter_valid_last),
   

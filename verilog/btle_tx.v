@@ -52,8 +52,6 @@ module btle_tx #
   input  wire [7:0] pdu_octet_mem_data,
   input  wire [5:0] pdu_octet_mem_addr,
 
-  input  wire tx_start,
-
 `ifdef BTLE_TX_IQ
   output wire signed [(IQ_BIT_WIDTH-1) : 0] i,
   output wire signed [(IQ_BIT_WIDTH-1) : 0] q,
@@ -65,10 +63,11 @@ module btle_tx #
   output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
 `endif
 
+`ifdef BTLE_BAREMETAL
   // for debug purpose
-  output wire phy_bit,
-  output wire phy_bit_valid,
-  output wire phy_bit_valid_last,
+  output phy_bit,
+  output phy_bit_valid,
+  output phy_bit_valid_last,
 
   output wire bit_upsample,
   output wire bit_upsample_valid,
@@ -76,8 +75,17 @@ module btle_tx #
 
   output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] bit_upsample_gauss_filter,
   output wire bit_upsample_gauss_filter_valid,
-  output wire bit_upsample_gauss_filter_valid_last
+  output wire bit_upsample_gauss_filter_valid_last,
+`endif
+
+  input  wire tx_start
 );
+
+`ifndef BTLE_BAREMETAL
+/* verilator lint_off UNUSEDSIGNAL */
+wire bit_upsample_gauss_filter_valid_last;
+/* verilator lint_on UNUSEDSIGNAL */
+`endif
 
 localparam [1:0] IDLE               = 0,
                  TX_PREAMBLE_ACCESS = 1,
@@ -103,9 +111,11 @@ wire info_bit_after_crc24;
 wire info_bit_after_crc24_valid;
 wire info_bit_after_crc24_valid_last;
 
-// wire phy_bit;
-// wire phy_bit_valid;
-// wire phy_bit_valid_last;
+`ifndef BTLE_BAREMETAL
+wire phy_bit;
+wire phy_bit_valid;
+wire phy_bit_valid_last;
+`endif
 
 `ifdef BTLE_TX_IQ
 wire signed [(IQ_BIT_WIDTH-1) : 0] i_internal;
@@ -301,10 +311,6 @@ gfsk_modulation # (
   .sin_table_write_data(sin_table_write_data),
 `endif
 
-  .phy_bit(phy_bit),
-  .bit_valid(phy_bit_valid),
-  .bit_valid_last(phy_bit_valid_last),
-
 `ifdef BTLE_TX_IQ
   .cos_out(i_internal),
   .sin_out(q_internal),
@@ -315,13 +321,21 @@ gfsk_modulation # (
 `ifdef BTLE_TX_POLAR
   .fmod(fmod),
 `endif
+
+`ifdef BTLE_BAREMETAL
   .bit_upsample(bit_upsample),
   .bit_upsample_valid(bit_upsample_valid),
   .bit_upsample_valid_last(bit_upsample_valid_last),
 
   .bit_upsample_gauss_filter(bit_upsample_gauss_filter),
   .bit_upsample_gauss_filter_valid(bit_upsample_gauss_filter_valid),
-  .bit_upsample_gauss_filter_valid_last(bit_upsample_gauss_filter_valid_last)
+`endif
+
+  .bit_upsample_gauss_filter_valid_last(bit_upsample_gauss_filter_valid_last),
+
+  .phy_bit(phy_bit),
+  .bit_valid(phy_bit_valid),
+  .bit_valid_last(phy_bit_valid_last)
 );
 
 endmodule // btle_tx

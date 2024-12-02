@@ -63,6 +63,7 @@ module btle_phy #
   output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] fmod,
 `endif
 
+`ifdef BTLE_BAREMETAL
   // for tx debug purpose
   output wire tx_phy_bit,
   output wire tx_phy_bit_valid,
@@ -75,6 +76,7 @@ module btle_phy #
   output wire signed [(GAUSS_FILTER_BIT_WIDTH-1) : 0] tx_bit_upsample_gauss_filter,
   output wire tx_bit_upsample_gauss_filter_valid,
   output wire tx_bit_upsample_gauss_filter_valid_last,
+`endif
 
   // for rx
   input wire [(LEN_UNIQUE_BIT_SEQUENCE-1) : 0]  rx_unique_bit_sequence,
@@ -89,11 +91,12 @@ module btle_phy #
   output wire  rx_decode_run,
   output wire  rx_decode_end,
   output wire  rx_crc_ok,
+`ifdef BTLE_BAREMETAL
   output wire  [2:0] rx_best_phase,
+`endif
   output wire  [6:0] rx_payload_length,
-
-  input  wire  [5:0] rx_pdu_octet_mem_addr,
-  output wire  [7:0] rx_pdu_octet_mem_data
+  output wire  [7:0] rx_pdu_octet_mem_data,
+  input  wire  [5:0] rx_pdu_octet_mem_addr
 );
 
 btle_tx # (
@@ -131,7 +134,6 @@ btle_tx # (
   .pdu_octet_mem_data(tx_pdu_octet_mem_data),
   .pdu_octet_mem_addr(tx_pdu_octet_mem_addr),
 
-  .tx_start(tx_start),
 `ifdef BTLE_TX_IQ
   .i(tx_i_signal),
   .q(tx_q_signal),
@@ -142,6 +144,7 @@ btle_tx # (
   .fmod(fmod),
 `endif
 
+`ifdef BTLE_BAREMETAL
   // for debug purpose
   .phy_bit(tx_phy_bit),
   .phy_bit_valid(tx_phy_bit_valid),
@@ -153,7 +156,10 @@ btle_tx # (
 
   .bit_upsample_gauss_filter(tx_bit_upsample_gauss_filter),
   .bit_upsample_gauss_filter_valid(tx_bit_upsample_gauss_filter_valid),
-  .bit_upsample_gauss_filter_valid_last(tx_bit_upsample_gauss_filter_valid_last)
+  .bit_upsample_gauss_filter_valid_last(tx_bit_upsample_gauss_filter_valid_last),
+`endif
+
+  .tx_start(tx_start)
 );
 
 btle_rx # (
@@ -178,8 +184,9 @@ btle_rx # (
   .decode_run(rx_decode_run),
   .decode_end(rx_decode_end),
   .crc_ok(rx_crc_ok),
+`ifdef BTLE_BAREMETAL
   .best_phase(rx_best_phase),
-
+`endif
   .payload_length(rx_payload_length),
 
   .pdu_octet_mem_data(rx_pdu_octet_mem_data),
