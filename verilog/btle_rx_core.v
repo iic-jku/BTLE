@@ -14,7 +14,7 @@
 
 module btle_rx_core #
 (
-  parameter GFSK_DEMODULATION_BIT_WIDTH = 16,
+  parameter GFSK_DEMODULATION_BIT_WIDTH = 4, // [HP] change from 16 to 4
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32,
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6,
   parameter CRC_STATE_BIT_WIDTH = 24
@@ -62,7 +62,7 @@ wire [6:0] octet_count;
 // reg  [6:0] payload_length;
 
 /* verilator lint_off UNUSEDSIGNAL */
-wire [31:0] dummy1;
+wire signed [(2*GFSK_DEMODULATION_BIT_WIDTH-1) : 0] dummy1;
 wire dummy2;
 /* verilator lint_on UNUSEDSIGNAL */
 

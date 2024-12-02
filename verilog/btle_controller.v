@@ -32,7 +32,7 @@ module btle_controller #
   parameter IQ_BIT_WIDTH = 8,
   parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1,
 `endif
-  parameter GFSK_DEMODULATION_BIT_WIDTH = 16,
+  parameter GFSK_DEMODULATION_BIT_WIDTH = 4, // [HP] change from 16 to 4
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32
 ) (
   input clk,
