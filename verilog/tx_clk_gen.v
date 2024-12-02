@@ -9,12 +9,14 @@
 // Since: 2019-06-07 15:36:59
 // LastEditors: halftop
 // LastEditTime: 2019-06-07 15:36:59
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // ********************************************************************
 // Module Function: generate_uart_tx_baud_rate_clk
 
 `ifndef __TX_CLK_GEN__
 `define __TX_CLK_GEN__
-`timescale 1ns / 1ps
+`include "btle_config.v"
 
 module tx_clk_gen
 #(

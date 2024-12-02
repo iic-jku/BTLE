@@ -9,13 +9,14 @@
 // Since: 2019-06-09 16:31:56
 // LastEditors: halftop
 // LastEditTime: 2019-06-09 16:31:56
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // ********************************************************************
-// Module Function:
 
 `ifndef __UART_FRAME_RX__
 `define __UART_FRAME_RX__
+`include "btle_config.v"
 `include "rx_clk_gen.v"
-`timescale 1ns / 1ps
 
 module uart_frame_rx
 #(

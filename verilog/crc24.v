@@ -1,5 +1,7 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // Core_v5.3 figure3.4 on page 2734
@@ -8,8 +10,8 @@
 
 `ifndef __CRC24__
 `define __CRC24__
+`include "btle_config.v"
 `include "crc24_core.v"
-`timescale 1ns / 1ps
 
 module crc24 #
 (

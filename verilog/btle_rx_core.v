@@ -1,14 +1,16 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 `ifndef __BTLE_RX_CORE__
 `define __BTLE_RX_CORE__
+`include "btle_config.v"
 `include "gfsk_demodulation.v"
 `include "search_unique_bit_sequence.v"
 `include "scramble_core.v"
 `include "crc24_core.v"
-`timescale 1ns / 1ps
 
 module btle_rx_core #
 (

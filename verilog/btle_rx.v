@@ -1,14 +1,16 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // iverilog -o btle_rx btle_rx.v btle_rx_core.v gfsk_demodulation.v search_unique_bit_sequence.v scramble_core.v crc24_core.v serial_in_ram_out.v dpram.v
 
 `ifndef __BTLE_RX__
 `define __BTLE_RX__
+`include "btle_config.v"
 `include "btle_rx_core.v"
 `include "serial_in_ram_out.v"
-`timescale 1ns / 1ps
 
 module btle_rx #
 (

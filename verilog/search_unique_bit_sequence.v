@@ -1,11 +1,13 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 `ifndef __SEARCH_UNIQUE_BIT_SEQUENCE__
 `define __SEARCH_UNIQUE_BIT_SEQUENCE__
+`include "btle_config.v"
 
-`timescale 1ns / 1ps
 module search_unique_bit_sequence #
 (
   parameter LEN_UNIQUE_BIT_SEQUENCE = 32

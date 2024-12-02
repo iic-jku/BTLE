@@ -1,5 +1,7 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // Input phy_bit rate 1M, output phy_bit rate 8M
@@ -7,8 +9,8 @@
 
 `ifndef __BIT_REPEAT_UPSAMPLE__
 `define __BIT_REPEAT_UPSAMPLE__
+`include "btle_config.v"
 
-`timescale 1ns / 1ps
 module bit_repeat_upsample #
 (
   /* verilator lint_off UNUSEDPARAM */

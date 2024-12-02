@@ -1,10 +1,12 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 `ifndef __GFSK_DEMODULATION__
 `define __GFSK_DEMODULATION__
-`timescale 1ns / 1ps
+`include "btle_config.v"
 
 module gfsk_demodulation #
 (

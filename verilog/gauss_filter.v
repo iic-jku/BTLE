@@ -1,5 +1,7 @@
 // Author: Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: Apache-2.0 license
 
 // Core_v5.3 section 3.1on page 2640
@@ -7,7 +9,7 @@
 
 `ifndef __GAUSS_FILTER__
 `define __GAUSS_FILTER__
-`timescale 1ns / 1ps
+`include "btle_config.v"
 
 module gauss_filter #
 (

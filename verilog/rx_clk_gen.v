@@ -9,12 +9,14 @@
 // Since: 2019-06-09 16:30:57
 // LastEditors: halftop
 // LastEditTime: 2019-06-09 16:30:57
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // ********************************************************************
 // Module Function: generate uart rx sample clk = 9 x BAUD_RATE
 
 `ifndef __RX_CLK_GEN__
 `define __RX_CLK_GEN__
-`timescale 1ns / 1ps
+`include "btle_config.v"
 
 module rx_clk_gen
 #(

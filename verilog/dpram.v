@@ -1,5 +1,7 @@
 // Author: Kenneth Wilke <kenneth.wilke@gmail.com>, Xianjun Jiao <putaoshu@msn.com>
 // SPDX-FileCopyrightText: 2024 Xianjun Jiao
+// Author: Harald Pretl (harald.pretl@jku.at)
+// SPDX-FileCopyrightText: 2024 Harald Pretl
 // SPDX-License-Identifier: ISC License
 
 // Dual-ported parameterized RAM module
@@ -22,6 +24,7 @@
 
 `ifndef __DPRAM__
 `define __DPRAM__
+`include "btle_config.v"
 
 `timescale 1ns / 1ps
 module dpram #
