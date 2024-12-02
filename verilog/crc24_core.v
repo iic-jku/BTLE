@@ -33,8 +33,7 @@ assign new_bit = lfsr[23]^data_in;
 
 always @ (posedge clk or posedge rst) begin
   if (rst) begin
-    // lfsr <= 0;
-    lfsr <= crc_state_init_bit_switch;
+    lfsr <= 0;
   end else begin
     if (crc_state_init_bit_load) begin
       lfsr <= crc_state_init_bit_switch;

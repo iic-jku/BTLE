@@ -32,12 +32,12 @@ always @ (posedge clk or posedge rst) begin
     // lfsr <= 0;
     lfsr[0] <= 1;
     // lfsr[CHANNEL_NUMBER_BIT_WIDTH : 1] <= channel_number;
-    lfsr[1] <= channel_number[5];
-    lfsr[2] <= channel_number[4];
-    lfsr[3] <= channel_number[3];
-    lfsr[4] <= channel_number[2];
-    lfsr[5] <= channel_number[1];
-    lfsr[6] <= channel_number[0];
+    lfsr[1] <= 0;
+    lfsr[2] <= 0;
+    lfsr[3] <= 0;
+    lfsr[4] <= 0;
+    lfsr[5] <= 0;
+    lfsr[6] <= 0;
   end else begin
     if (channel_number_load) begin
       lfsr[0] <= 1;
