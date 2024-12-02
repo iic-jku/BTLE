@@ -24,7 +24,7 @@ module btle_controller #
   parameter CRC_STATE_BIT_WIDTH = 24,
   parameter CHANNEL_NUMBER_BIT_WIDTH = 6,
   parameter SAMPLE_PER_SYMBOL = 8,
-  parameter GAUSS_FILTER_BIT_WIDTH = 16,
+  parameter GAUSS_FILTER_BIT_WIDTH = 6, // [HP] change from 16 to 6
   parameter NUM_TAP_GAUSS_FILTER = 17,
 `ifdef BTLE_TX_IQ
   parameter VCO_BIT_WIDTH = 16,

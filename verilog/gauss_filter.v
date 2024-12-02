@@ -13,7 +13,7 @@
 
 module gauss_filter #
 (
-  parameter GAUSS_FILTER_BIT_WIDTH = 16,
+  parameter GAUSS_FILTER_BIT_WIDTH = 6, // [HP] change from 16 to 6
   parameter NUM_TAP_GAUSS_FILTER = 17
 ) (
   input wire clk,
@@ -82,6 +82,7 @@ assign tap16_mult = (bit_upsample_store[15]?gauss_filter_tap0:(-gauss_filter_tap
 // Populate input tap index and value to internal taps
 always @ (posedge clk or posedge rst) begin
   if (rst) begin
+    // FIXME set filter taps to proper value with reset
     gauss_filter_tap0 <= 0;
     gauss_filter_tap1 <= 0;
     gauss_filter_tap2 <= 0;

@@ -22,7 +22,7 @@ module gfsk_modulation #
   parameter IQ_BIT_WIDTH = 8,
   parameter GAUSS_FIR_OUT_AMP_SCALE_DOWN_NUM_BIT_SHIFT = 1,
 `endif
-  parameter GAUSS_FILTER_BIT_WIDTH = 16,
+  parameter GAUSS_FILTER_BIT_WIDTH = 6, // [HP] change from 16 to 6
   parameter NUM_TAP_GAUSS_FILTER = 17
 ) (
   input wire clk,

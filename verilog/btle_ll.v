@@ -25,7 +25,7 @@ module btle_ll # (
   parameter PARITY			= "NONE"	,		  //"NONE","EVEN","ODD"
   parameter FRAME_WD		= 8,					    //if PARITY="NONE",it can be 5~9;else 5~8
 
-  parameter GAUSS_FILTER_BIT_WIDTH = 16,
+  parameter GAUSS_FILTER_BIT_WIDTH = 6, // [HP] change from 16 to 6
 `ifdef BTLE_TX_IQ
   parameter SIN_COS_ADDR_BIT_WIDTH = 11,
   parameter IQ_BIT_WIDTH = 8,
