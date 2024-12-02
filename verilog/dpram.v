@@ -26,11 +26,10 @@
 `define __DPRAM__
 `include "btle_config.v"
 
-`timescale 1ns / 1ps
 module dpram #
 (
   parameter DATA_WIDTH = 8,
-  parameter ADDRESS_WIDTH = 11
+  parameter ADDRESS_WIDTH = 4
 ) (
   input wire clk,
   input wire rst,
