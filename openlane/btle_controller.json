@@ -1,0 +1,6 @@
+{
+    "DESIGN_NAME": "btle_controller",
+    "VERILOG_FILES": "dir::../verilog/btle_controller.v",
+    "CLOCK_PORT": "clk",
+    "CLOCK_PERIOD": 60
+}
