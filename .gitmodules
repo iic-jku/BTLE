@@ -1,3 +1,0 @@
-[submodule "verilog/adi-hdl"]
-	path = verilog/adi-hdl
-	url = https://github.com/analogdevicesinc/hdl.git
