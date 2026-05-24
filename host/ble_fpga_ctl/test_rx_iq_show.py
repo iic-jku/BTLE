@@ -34,6 +34,10 @@ if __name__ == "__main__":
   duration_ms = int(100)
   sampling_rate_hz = int(8e6)
 
+  fft_size=128
+  num_sample_feed_to_fft=8
+  sample_resolution=2
+  
   parser = argparse.ArgumentParser(
     description="Waterfall spectrum analyzer"
   )
@@ -42,6 +46,9 @@ if __name__ == "__main__":
   parser.add_argument("-n", "--freq_hz", type=int, default=freq_hz, help="Input frequency in Hz (default: "+str(freq_hz))
   parser.add_argument("-q", "--duration_ms", type=int, default=duration_ms, help="Input duration in ms (default: "+str(duration_ms))
   parser.add_argument("-s", "--sampling_rate_hz", type=int, default=sampling_rate_hz, help="Input sampling rate in Hz (default: "+str(sampling_rate_hz))
+  parser.add_argument("-N", "--fft_size", type=int, default=fft_size, help="Input FFT size (default: "+str(fft_size))
+  parser.add_argument("-E", "--num_sample_feed_to_fft", type=int, default=num_sample_feed_to_fft, help="Input number of samples fed to FFT (default: "+str(num_sample_feed_to_fft))
+  parser.add_argument("-R", "--sample_resolution", type=int, default=sample_resolution, help="Input sample resolution (default: "+str(sample_resolution))
 
   args = parser.parse_args()
 
@@ -84,28 +91,30 @@ if __name__ == "__main__":
     my_bytes = file.read()
 
   rx_iq = np.frombuffer(my_bytes, dtype=np.int16)
-  rx_complex = rx_iq[0::2] + 1j * rx_iq[1::2]  # the sampling rate is alraedy iq sampling rate
   rx_i = rx_iq[0::2]
   rx_q = rx_iq[1::2]
-  # rx_abs = np.abs(rx_complex)
+  rx_complex = rx_i + 1j * rx_q  # the sampling rate is alraedy iq sampling rate
+  rx_abs = np.abs(rx_complex)
 
-  # if len(rx_i) > 10000:
-  #   print('Decide the start/end idx. Close figure and input ...')
+  if len(rx_i) > 10000:
+    print('Decide the start/end idx. Close figure and input ...')
 
-  #   plt.plot(rx_i, 'b', label='I')
-  #   plt.plot(rx_q, 'r', label='Q')
-  #   plt.legend(loc='upper right')
-  #   plt.grid(True)
-  #   plt.title('Decide the start/end idx. Close figure and input ...')
-  #   plt.show()
+    plt.plot(rx_abs, 'b', label='Abs')
+    # plt.plot(rx_i, 'b', label='I')
+    # plt.plot(rx_q, 'r', label='Q')
+    plt.legend(loc='upper right')
+    plt.grid(True)
+    plt.title('Decide the start/end idx. Close figure and input ...')
+    plt.show()
 
-  #   start_index = int(input('Enter the start index for processing: '))
-  #   end_index = int(input('Enter the end index for processing: '))
-  #   rx_i = rx_i[start_index:end_index]
-  #   rx_q = rx_q[start_index:end_index]
+    start_index = int(input('Enter the start index for processing: '))
+    end_index = int(input('Enter the end index for processing: '))
+    rx_i = rx_i[start_index:end_index]
+    rx_q = rx_q[start_index:end_index]
+    rx_complex = rx_i + 1j * rx_q  # the sampling rate is alraedy iq sampling rate
 
-  #   # close the figure after user input
-  #   plt.close()
+    # close the figure after user input
+    plt.close()
 
   fig_timedomain_abs = plt.figure(1)
   fig_timedomain_abs.clf()
@@ -121,9 +130,6 @@ if __name__ == "__main__":
   
   fig_timedomain_abs.canvas.flush_events()
 
-  fft_size=128
-  num_sample_feed_to_fft=8
-  sample_resolution=2
   a = water_fall(rx_complex, fft_size=fft_size, num_sample_feed_to_fft=num_sample_feed_to_fft, sample_resolution=sample_resolution)
 
   time_resolution_us = (sample_resolution*(1/sampling_rate_hz))*1e6
