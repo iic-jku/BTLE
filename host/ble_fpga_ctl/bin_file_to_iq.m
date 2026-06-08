@@ -12,7 +12,6 @@ if fid == -1
     return;
 end
 
-##iq = fread(fid, inf, 'uint8');
 iq = fread(fid, inf, data_format);
 fclose(fid);
 
